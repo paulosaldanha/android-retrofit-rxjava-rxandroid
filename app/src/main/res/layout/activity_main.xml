@@ -31,4 +31,23 @@
             android:layout_margin="@dimen/fab_margin"
             app:srcCompat="@android:drawable/ic_input_add"/>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/loadingText"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#AA000000">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Carregando.."
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="#FFF"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -7,30 +7,29 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.checkSelfPermission
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.internal.disposables.ArrayCompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import retrofit2.Retrofit
-import java.io.IOException
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     lateinit var retrofit: Retrofit
     lateinit var api: AlbumService
     var myCompositeDisposable: CompositeDisposable = CompositeDisposable()
+    // lateinit var recyclerView:RecyclerView
+    lateinit var adapter: PhotoAlbumAdapter
+    var photoList = ArrayList<PhotoAlbum>()
     var action_busca:Int = 1
 
     fun btnInit(){
@@ -45,6 +44,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        //
+        // recyclerView = findViewById(R.id.list_photos_album)
+        list_photos_album.adapter=PhotoAlbumAdapter(photoList,this)
+        list_photos_album.layoutManager=LinearLayoutManager(this,RecyclerView.VERTICAL,false)
 
         btnInit()
 
@@ -70,10 +73,22 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun handleResponse(albumList: List<Album>) {
-        Log.e("Response:",albumList.toString())
-        txtIdAlbum.setText(albumList[0].id.toString())
-        txtTitle.setText(albumList[0].title)
+    private fun buscaFotos(albumId:Int){
+            this.myCompositeDisposable.add(api.getPhotos(albumId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(object: DisposableSingleObserver<List<PhotoAlbum>>() {
+                    override fun onSuccess(albumPhotoList: List<PhotoAlbum>) {
+                        loadingText.visibility = View.GONE
+                        photoList.addAll(albumPhotoList)
+                        list_photos_album.adapter!!.notifyDataSetChanged()
+                    }
+
+                    override fun onError(e: Throwable) {
+                        loadingText.visibility = View.GONE
+                        e.printStackTrace()
+                    }
+                }))
     }
 
     /*
@@ -89,9 +104,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         if(checkSelfPermission(this,Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET),action_busca)
         }else {
+            loadingText.visibility = View.VISIBLE
             val id: Int = txtIdAlbum.text.toString().toInt()
             Log.e("ID:",id.toString())
-            this.myCompositeDisposable?.add(api.selectAlbum(id)
+            this.myCompositeDisposable.add(api.selectAlbum(id)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(object: DisposableSingleObserver<Album>() {
@@ -99,6 +115,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         Log.e("Response:",albumList.toString())
                         txtIdAlbum.setText(albumList.id.toString())
                         txtTitle.setText(albumList.title)
+                        buscaFotos(id)
                     }
 
                     override fun onError(e: Throwable) {
@@ -107,41 +124,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     }
                 }))
 
-
-            this.myCompositeDisposable?.add(api.selectAlbums()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribeWith(object: DisposableSingleObserver<List<Album>>() {
-                    override fun onSuccess(albumList: List<Album>) {
-                        Log.e("ALBUMS:", "-------------------------------")
-                        // txtIdAlbum.setText(albumList.id.toString())
-                        // txtTitle.setText(albumList.title)
-                        for (album: Album in albumList) {
-                            Log.e("ALBUM_INFO", album.id.toString() + " -> " + album.title)
-                        }
-                        Log.e("ALBUMS:", "-------------------------------")
-                    }
-
-                    override fun onError(e: Throwable) {
-                        Log.e("ERROAAAA", e.message)
-                        e.printStackTrace()
-                    }
-                }))
-
-//            val request:Call<List<Album>> = api.selectAlbum(id)
-//            request.enqueue(object : Callback<List<Album>>{
-//                override fun onResponse(call: Call<List<Album>>, response: Response<List<Album>>) {
-//                   if(response.code() == 200){
-//                       val albumResponse = response.body()!!
-//                       txtIdAlbum.text = albumResponse.get(0).id.toString()
-//                       txtTitle.text = albumResponse.get(0).title
-//                   }
-//                }
-//
-//                override fun onFailure(call: Call<List<Album>>, t: Throwable) {
-//                    Toast.makeText(applicationContext,"Item with given id was not found",Toast.LENGTH_LONG).show()
-//                }
-//            })
         }
         return null
     }
@@ -155,6 +137,22 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Are you sure to delete this item?")
             builder.setPositiveButton("Yes") { dialog, which ->
+                this.myCompositeDisposable?.add(api.deleteAlbum(id)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribeWith(object: DisposableSingleObserver<Album>() {
+                        override fun onSuccess(albumList: Album) {
+                            Log.e("Response:",albumList.toString())
+                            txtIdAlbum.setText(albumList.id.toString())
+                            txtTitle.setText(albumList.title)
+                        }
+
+                        override fun onError(e: Throwable) {
+                            Log.e("ERROAAAA", e.message)
+                            e.printStackTrace()
+                        }
+                    }))
+
                 //                val request:Call<Album> = api.deleteAlbum(id)
 //                request.enqueue(object : Callback<List<Album>> {
 //                    override fun onResponse(call: Call<List<Album>>, response: Response<List<Album>>) {
@@ -185,25 +183,49 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     fun btnSalvarOnClick():Void? {
         val sucesso = true
         var id:Int? = txtIdAlbum.text.toString().toIntOrNull()
+        var title:String = txtTitle.text.toString()
         if(id == null || id == 0){
             id = 0
         }
 
         if(id > 0){
             //update
+            this.myCompositeDisposable?.add(api.updateAlbum(id,title,1)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(object: DisposableSingleObserver<Album>() {
+                    override fun onSuccess(albumList: Album) {
+                        Toast.makeText(applicationContext,"Item was saved with success",Toast.LENGTH_LONG).show()
+                        Log.e("Response:",albumList.toString())
+                        txtIdAlbum.setText("")
+                        txtTitle.setText("")
+                    }
+
+                    override fun onError(e: Throwable) {
+                        Log.e("ERROAAAA", e.message)
+                        e.printStackTrace()
+                    }
+                }))
         }else{
             //insert
+            this.myCompositeDisposable?.add(api.insertAlbum(title,1)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(object: DisposableSingleObserver<Album>() {
+                    override fun onSuccess(albumList: Album) {
+                        Toast.makeText(applicationContext,"Item was saved with success",Toast.LENGTH_LONG).show()
+                        Log.e("Response:",albumList.toString())
+                        txtIdAlbum.setText("")
+                        txtTitle.setText("")
+                    }
+
+                    override fun onError(e: Throwable) {
+                        Log.e("ERROAAAA", e.message)
+                        e.printStackTrace()
+                    }
+                }))
         }
 
-        if(!sucesso){
-            if(id > 0){
-                Toast.makeText(applicationContext,"Item with id given was not found",Toast.LENGTH_LONG).show()
-            }else{
-                Toast.makeText(applicationContext,"Item was not possible to save",Toast.LENGTH_LONG).show()
-            }
-        }else{
-            Toast.makeText(applicationContext,"Item was saved with success",Toast.LENGTH_LONG).show()
-        }
         return null
     }
 
