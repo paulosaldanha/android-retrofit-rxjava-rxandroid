@@ -1,4 +1,4 @@
-package com.example.retrofitandbutterknife
+package com.example.retrofitandbutterknife.utils
 
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory

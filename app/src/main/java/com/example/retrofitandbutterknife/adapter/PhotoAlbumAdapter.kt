@@ -1,4 +1,4 @@
-package com.example.retrofitandbutterknife
+package com.example.retrofitandbutterknife.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,14 +7,21 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.example.retrofitandbutterknife.R
+import com.example.retrofitandbutterknife.model.PhotoAlbum
 import com.squareup.picasso.Picasso
 
 class PhotoAlbumAdapter(private val photos: List<PhotoAlbum>, private val context: Context):
     RecyclerView.Adapter<PhotoAlbumAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-       return ViewHolder(LayoutInflater.from(context).inflate(R.layout.list_photo_album_item,parent,false))
+       return ViewHolder(
+           LayoutInflater.from(context).inflate(
+               R.layout.list_photo_album_item,
+               parent,
+               false
+           )
+       )
     }
 
     override fun getItemCount(): Int {

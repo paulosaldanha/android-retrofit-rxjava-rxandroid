@@ -14,6 +14,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.checkSelfPermission
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.retrofitandbutterknife.adapter.PhotoAlbumAdapter
+import com.example.retrofitandbutterknife.model.Album
+import com.example.retrofitandbutterknife.model.PhotoAlbum
+import com.example.retrofitandbutterknife.service.AlbumService
+import com.example.retrofitandbutterknife.utils.NetworkUtils
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
@@ -39,6 +44,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         btnSalvar.setOnClickListener(this)
     }
 
+    fun clear(){
+        var size:Int = photoList.size
+        photoList.clear()
+        list_photos_album.adapter!!.notifyItemRangeChanged(0,size)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -46,7 +57,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         setSupportActionBar(toolbar)
         //
         // recyclerView = findViewById(R.id.list_photos_album)
-        list_photos_album.adapter=PhotoAlbumAdapter(photoList,this)
+        list_photos_album.adapter= PhotoAlbumAdapter(photoList, this)
         list_photos_album.layoutManager=LinearLayoutManager(this,RecyclerView.VERTICAL,false)
 
         btnInit()
@@ -143,8 +154,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     .subscribeWith(object: DisposableSingleObserver<Album>() {
                         override fun onSuccess(albumList: Album) {
                             Log.e("Response:",albumList.toString())
-                            txtIdAlbum.setText(albumList.id.toString())
-                            txtTitle.setText(albumList.title)
+                            txtIdAlbum.setText("")
+                            txtTitle.setText("")
+                            clear()
                         }
 
                         override fun onError(e: Throwable) {
@@ -199,6 +211,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         Log.e("Response:",albumList.toString())
                         txtIdAlbum.setText("")
                         txtTitle.setText("")
+                        clear()
                     }
 
                     override fun onError(e: Throwable) {
@@ -217,6 +230,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         Log.e("Response:",albumList.toString())
                         txtIdAlbum.setText("")
                         txtTitle.setText("")
+                        clear()
                     }
 
                     override fun onError(e: Throwable) {

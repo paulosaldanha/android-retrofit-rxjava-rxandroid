@@ -1,5 +1,7 @@
-package com.example.retrofitandbutterknife
+package com.example.retrofitandbutterknife.service
 
+import com.example.retrofitandbutterknife.model.Album
+import com.example.retrofitandbutterknife.model.PhotoAlbum
 import io.reactivex.Single
 import retrofit2.http.*
 

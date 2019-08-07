@@ -1,4 +1,4 @@
-package com.example.retrofitandbutterknife
+package com.example.retrofitandbutterknife.model
 
 data class PhotoAlbum (
     val albumId: Int,
