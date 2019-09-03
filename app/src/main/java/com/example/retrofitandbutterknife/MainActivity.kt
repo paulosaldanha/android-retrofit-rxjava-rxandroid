@@ -12,6 +12,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.checkSelfPermission
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.retrofitandbutterknife.adapter.PhotoAlbumAdapter
@@ -66,6 +68,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         //retrofit = NetworkUtils.getRetrofitInstance("https://jsonplaceholder.typicode.com/")
         //api = retrofit.create(AlbumService::class.java)
+        api = ViewModelProviders.of(this,ViewModelProvider.AndroidViewModelFactory(this.application)).get(AlbumFotoViewModel::class.java)
 
     }
 
