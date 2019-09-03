@@ -19,6 +19,7 @@ import com.example.retrofitandbutterknife.model.Album
 import com.example.retrofitandbutterknife.model.PhotoAlbum
 import com.example.retrofitandbutterknife.service.AlbumService
 import com.example.retrofitandbutterknife.utils.NetworkUtils
+import com.example.retrofitandbutterknife.viewModel.AlbumFotoViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
@@ -29,8 +30,9 @@ import retrofit2.Retrofit
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
 
-    lateinit var retrofit: Retrofit
-    lateinit var api: AlbumService
+    //private lateinit var binding: Retrofit
+    lateinit var api: AlbumFotoViewModel
+
     var myCompositeDisposable: CompositeDisposable = CompositeDisposable()
     // lateinit var recyclerView:RecyclerView
     lateinit var adapter: PhotoAlbumAdapter
@@ -62,8 +64,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         btnInit()
 
-        retrofit = NetworkUtils.getRetrofitInstance("https://jsonplaceholder.typicode.com/")
-        api = retrofit.create(AlbumService::class.java)
+        //retrofit = NetworkUtils.getRetrofitInstance("https://jsonplaceholder.typicode.com/")
+        //api = retrofit.create(AlbumService::class.java)
 
     }
 
@@ -85,7 +87,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun buscaFotos(albumId:Int){
-            this.myCompositeDisposable.add(api.getPhotos(albumId)
+            this.myCompositeDisposable.add(api.albumService.getPhotos(albumId)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(object: DisposableSingleObserver<List<PhotoAlbum>>() {
@@ -118,7 +120,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             loadingText.visibility = View.VISIBLE
             val id: Int = txtIdAlbum.text.toString().toInt()
             Log.e("ID:",id.toString())
-            this.myCompositeDisposable.add(api.selectAlbum(id)
+            this.myCompositeDisposable.add(api.albumService.selectAlbum(id)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(object: DisposableSingleObserver<Album>() {
@@ -148,7 +150,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Are you sure to delete this item?")
             builder.setPositiveButton("Yes") { dialog, which ->
-                this.myCompositeDisposable?.add(api.deleteAlbum(id)
+                this.myCompositeDisposable?.add(api.albumService.deleteAlbum(id)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
                     .subscribeWith(object: DisposableSingleObserver<Album>() {
@@ -202,7 +204,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         if(id > 0){
             //update
-            this.myCompositeDisposable?.add(api.updateAlbum(id,title,1)
+            this.myCompositeDisposable?.add(api.albumService.updateAlbum(id,title,1)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(object: DisposableSingleObserver<Album>() {
@@ -221,7 +223,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }))
         }else{
             //insert
-            this.myCompositeDisposable?.add(api.insertAlbum(title,1)
+            this.myCompositeDisposable?.add(api.albumService.insertAlbum(title,1)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(object: DisposableSingleObserver<Album>() {
