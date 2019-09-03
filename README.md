@@ -1,2 +1,2 @@
 # android-retrofit-rxjava-rxandroid
-App android kotlin with retrofit, rxjava and rxandroid
+Simple android app to list albums and its photos, built with kotlin, retrofit, rxjava, rxandroid and dagger2 using MVVM pattern.
